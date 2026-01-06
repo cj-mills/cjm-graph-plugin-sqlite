@@ -8,3 +8,235 @@
 ``` bash
 pip install cjm_graph_plugin_sqlite
 ```
+
+## Project Structure
+
+    nbs/
+    ├── meta.ipynb   # Metadata introspection for the SQLite Graph plugin used by cjm-ctl to generate the registration manifest.
+    └── plugin.ipynb # Plugin implementation for Context Graph using SQLite
+
+Total: 2 notebooks
+
+## Module Dependencies
+
+``` mermaid
+graph LR
+    meta[meta<br/>Metadata]
+    plugin[plugin<br/>SQLite Graph Plugin]
+
+    plugin --> meta
+```
+
+*1 cross-module dependencies detected*
+
+## CLI Reference
+
+No CLI commands found in this project.
+
+## Module Overview
+
+Detailed documentation for each module in the project:
+
+### Metadata (`meta.ipynb`)
+
+> Metadata introspection for the SQLite Graph plugin used by cjm-ctl to
+> generate the registration manifest.
+
+#### Import
+
+``` python
+from cjm_graph_plugin_sqlite.meta import (
+    get_plugin_metadata
+)
+```
+
+#### Functions
+
+``` python
+def get_plugin_metadata() -> Dict[str, Any]:  # Plugin metadata for manifest generation
+    """Return metadata required to register this plugin with the PluginManager."""
+    # Calculate default DB path relative to the environment
+    # e.g., /opt/conda/envs/cjm-graph-plugin-sqlite/data/context_graph.db
+    base_path = os.path.dirname(os.path.dirname(sys.executable))
+    data_dir = os.path.join(base_path, "data")
+    db_path = os.path.join(data_dir, "context_graph.db")
+
+    # Ensure data directory exists
+    os.makedirs(data_dir, exist_ok=True)
+
+    return {
+        "name": "cjm-graph-plugin-sqlite",
+    "Return metadata required to register this plugin with the PluginManager."
+```
+
+### SQLite Graph Plugin (`plugin.ipynb`)
+
+> Plugin implementation for Context Graph using SQLite
+
+#### Import
+
+``` python
+from cjm_graph_plugin_sqlite.plugin import (
+    SQLiteGraphPluginConfig,
+    SQLiteGraphPlugin
+)
+```
+
+#### Classes
+
+``` python
+@dataclass
+class SQLiteGraphPluginConfig:
+    "Configuration for SQLite Graph Plugin."
+    
+    db_path: Optional[str] = field(...)
+    readonly: bool = field(...)
+```
+
+``` python
+class SQLiteGraphPlugin:
+    def __init__(self):
+        self.logger = logging.getLogger(f"{__name__}.{type(self).__name__}")
+        self.config: SQLiteGraphPluginConfig = None
+    "Local, file-backed Context Graph implementation using SQLite."
+    
+    def __init__(self):
+            self.logger = logging.getLogger(f"{__name__}.{type(self).__name__}")
+            self.config: SQLiteGraphPluginConfig = None
+    
+    def name(self) -> str:  # Plugin name identifier
+            """Get the plugin name identifier."""
+            return "sqlite_graph"
+    
+        @property
+        def version(self) -> str:  # Plugin version string
+        "Get the plugin name identifier."
+    
+    def version(self) -> str:  # Plugin version string
+            """Get the plugin version string."""
+            return "0.1.0"
+    
+        def get_current_config(self) -> Dict[str, Any]:  # Current configuration as dictionary
+        "Get the plugin version string."
+    
+    def get_current_config(self) -> Dict[str, Any]:  # Current configuration as dictionary
+            """Return current configuration state."""
+            if not self.config
+        "Return current configuration state."
+    
+    def get_config_schema(self) -> Dict[str, Any]:  # JSON Schema for configuration
+            """Return JSON Schema for UI generation."""
+            return dataclass_to_jsonschema(SQLiteGraphPluginConfig)
+    
+        def initialize(
+            self,
+            config: Optional[Any] = None  # Configuration dataclass, dict, or None
+        ) -> None
+        "Return JSON Schema for UI generation."
+    
+    def initialize(
+            self,
+            config: Optional[Any] = None  # Configuration dataclass, dict, or None
+        ) -> None
+        "Initialize DB connection and schema."
+    
+    def add_nodes(
+            self,
+            nodes: List[GraphNode]  # Nodes to create
+        ) -> List[str]:  # Created node IDs
+        "Bulk create nodes."
+    
+    def add_edges(
+            self,
+            edges: List[GraphEdge]  # Edges to create
+        ) -> List[str]:  # Created edge IDs
+        "Bulk create edges."
+    
+    def get_node(
+            self,
+            node_id: str  # UUID of node to retrieve
+        ) -> Optional[GraphNode]:  # Node or None if not found
+        "Get a single node by ID."
+    
+    def get_edge(
+            self,
+            edge_id: str  # UUID of edge to retrieve
+        ) -> Optional[GraphEdge]:  # Edge or None if not found
+        "Get a single edge by ID."
+    
+    def find_nodes_by_source(
+            self,
+            source_ref: SourceRef  # External resource reference
+        ) -> List[GraphNode]:  # Nodes attached to this source
+        "Find all nodes linked to a specific external resource."
+    
+    def find_nodes_by_label(
+            self,
+            label: str,  # Node label to search for
+            limit: int = 100  # Max results
+        ) -> List[GraphNode]:  # Matching nodes
+        "Find nodes by label."
+    
+    def get_context(
+            self,
+            node_id: str,  # Starting node UUID
+            depth: int = 1,  # Traversal depth (1 = immediate neighbors)
+            filter_labels: Optional[List[str]] = None  # Only include nodes with these labels
+        ) -> GraphContext:  # Subgraph containing node and its neighborhood
+        "Get the neighborhood of a specific node."
+    
+    def execute(
+            self,
+            query: Union[GraphQuery, str],  # Query object or raw query string
+            **kwargs
+        ) -> GraphContext:  # Query results as a subgraph
+        "Execute a generic query against the graph."
+    
+    def update_node(
+            self,
+            node_id: str,  # UUID of node to update
+            properties: Dict[str, Any]  # Properties to merge/update
+        ) -> bool:  # True if successful
+        "Partial update of node properties."
+    
+    def update_edge(
+            self,
+            edge_id: str,  # UUID of edge to update
+            properties: Dict[str, Any]  # Properties to merge/update
+        ) -> bool:  # True if successful
+        "Partial update of edge properties."
+    
+    def delete_nodes(
+            self,
+            node_ids: List[str],  # UUIDs of nodes to delete
+            cascade: bool = True  # Also delete connected edges
+        ) -> int:  # Number of nodes deleted
+        "Delete nodes (and optionally connected edges)."
+    
+    def delete_edges(
+            self,
+            edge_ids: List[str]  # UUIDs of edges to delete
+        ) -> int:  # Number of edges deleted
+        "Delete edges."
+    
+    def get_schema(self) -> Dict[str, Any]:  # Graph schema/ontology
+            """Return the current ontology/schema of the graph."""
+            schema = {"node_labels": [], "edge_types": [], "counts": {}}
+        "Return the current ontology/schema of the graph."
+    
+    def import_graph(
+            self,
+            graph_data: GraphContext,  # Data to import
+            merge_strategy: str = "overwrite"  # "overwrite", "skip", or "merge"
+        ) -> Dict[str, int]:  # Import statistics {nodes_created, edges_created, ...}
+        "Bulk import a GraphContext (e.g., from backup or another plugin)."
+    
+    def export_graph(
+            self,
+            filter_query: Optional[GraphQuery] = None  # Optional filter
+        ) -> GraphContext:  # Exported subgraph or full graph
+        "Export the entire graph or a filtered subset."
+    
+    def cleanup(self) -> None
+        "Clean up resources."
+```
