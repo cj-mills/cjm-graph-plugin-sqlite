@@ -140,6 +140,13 @@ class SQLiteGraphPlugin:
         ) -> None
         "Initialize DB connection and schema."
     
+    def execute(
+            self,
+            action: str = "get_schema",  # Action to perform
+            **kwargs
+        ) -> Dict[str, Any]:  # JSON-serializable result
+        "Dispatch to appropriate method based on action."
+    
     def add_nodes(
             self,
             nodes: List[GraphNode]  # Nodes to create
@@ -184,13 +191,6 @@ class SQLiteGraphPlugin:
             filter_labels: Optional[List[str]] = None  # Only include nodes with these labels
         ) -> GraphContext:  # Subgraph containing node and its neighborhood
         "Get the neighborhood of a specific node."
-    
-    def execute(
-            self,
-            query: Union[GraphQuery, str],  # Query object or raw query string
-            **kwargs
-        ) -> GraphContext:  # Query results as a subgraph
-        "Execute a generic query against the graph."
     
     def update_node(
             self,

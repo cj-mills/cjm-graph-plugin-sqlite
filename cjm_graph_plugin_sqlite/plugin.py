@@ -154,6 +154,148 @@ class SQLiteGraphPlugin(GraphPlugin):
             properties=props
         )
 
+    def _dict_to_node(
+        self,
+        data: Dict[str, Any]  # Node data as dictionary
+    ) -> GraphNode:  # Reconstructed GraphNode
+        """Convert dictionary to GraphNode, handling nested sources."""
+        sources = []
+        for s in data.get("sources", []):
+            if isinstance(s, dict):
+                sources.append(SourceRef(**s))
+            else:
+                sources.append(s)
+        return GraphNode(
+            id=data["id"],
+            label=data["label"],
+            properties=data.get("properties", {}),
+            sources=sources
+        )
+
+    def _dict_to_edge(
+        self,
+        data: Dict[str, Any]  # Edge data as dictionary
+    ) -> GraphEdge:  # Reconstructed GraphEdge
+        """Convert dictionary to GraphEdge."""
+        return GraphEdge(
+            id=data["id"],
+            source_id=data["source_id"],
+            target_id=data["target_id"],
+            relation_type=data["relation_type"],
+            properties=data.get("properties", {})
+        )
+
+    # -------------------------------------------------------------------------
+    # EXECUTE - Main dispatcher for RemotePluginProxy
+    # -------------------------------------------------------------------------
+
+    def execute(
+        self,
+        action: str = "get_schema",  # Action to perform
+        **kwargs
+    ) -> Dict[str, Any]:  # JSON-serializable result
+        """Dispatch to appropriate method based on action."""
+
+        if action == "get_schema":
+            return self.get_schema()
+
+        elif action == "add_nodes":
+            # Convert dicts to GraphNode objects
+            nodes_data = kwargs.get("nodes", [])
+            nodes = []
+            for n in nodes_data:
+                if isinstance(n, dict):
+                    nodes.append(self._dict_to_node(n))
+                else:
+                    nodes.append(n)
+            ids = self.add_nodes(nodes)
+            return {"created_ids": ids, "count": len(ids)}
+
+        elif action == "add_edges":
+            edges_data = kwargs.get("edges", [])
+            edges = []
+            for e in edges_data:
+                if isinstance(e, dict):
+                    edges.append(self._dict_to_edge(e))
+                else:
+                    edges.append(e)
+            ids = self.add_edges(edges)
+            return {"created_ids": ids, "count": len(ids)}
+
+        elif action == "get_node":
+            node = self.get_node(kwargs["node_id"])
+            return {"node": node.to_dict() if node else None}
+
+        elif action == "get_edge":
+            edge = self.get_edge(kwargs["edge_id"])
+            return {"edge": edge.to_dict() if edge else None}
+
+        elif action == "get_context":
+            ctx = self.get_context(
+                kwargs["node_id"],
+                depth=kwargs.get("depth", 1),
+                filter_labels=kwargs.get("filter_labels")
+            )
+            return ctx.to_dict()
+
+        elif action == "find_nodes_by_source":
+            ref_data = kwargs["source_ref"]
+            if isinstance(ref_data, dict):
+                ref = SourceRef(**ref_data)
+            else:
+                ref = ref_data
+            nodes = self.find_nodes_by_source(ref)
+            return {"nodes": [n.to_dict() for n in nodes], "count": len(nodes)}
+
+        elif action == "find_nodes_by_label":
+            nodes = self.find_nodes_by_label(
+                kwargs["label"],
+                limit=kwargs.get("limit", 100)
+            )
+            return {"nodes": [n.to_dict() for n in nodes], "count": len(nodes)}
+
+        elif action == "update_node":
+            success = self.update_node(kwargs["node_id"], kwargs["properties"])
+            return {"success": success}
+
+        elif action == "update_edge":
+            success = self.update_edge(kwargs["edge_id"], kwargs["properties"])
+            return {"success": success}
+
+        elif action == "delete_nodes":
+            count = self.delete_nodes(
+                kwargs["node_ids"],
+                cascade=kwargs.get("cascade", True)
+            )
+            return {"deleted_count": count}
+
+        elif action == "delete_edges":
+            count = self.delete_edges(kwargs["edge_ids"])
+            return {"deleted_count": count}
+
+        elif action == "import_graph":
+            graph_data = kwargs["graph_data"]
+            if isinstance(graph_data, dict):
+                graph_data = GraphContext.from_dict(graph_data)
+            stats = self.import_graph(
+                graph_data,
+                merge_strategy=kwargs.get("merge_strategy", "overwrite")
+            )
+            return stats
+
+        elif action == "export_graph":
+            ctx = self.export_graph(filter_query=kwargs.get("filter_query"))
+            return ctx.to_dict()
+
+        elif action == "query":
+            # Raw query execution (future enhancement)
+            query = kwargs.get("query", "")
+            self.logger.warning(f"Raw query action not fully implemented: {query}")
+            return {"status": "not_implemented", "query": str(query)}
+
+        else:
+            raise ValueError(f"Unknown action: {action}")
+
     # -------------------------------------------------------------------------
     # CREATE
     # -------------------------------------------------------------------------
@@ -353,19 +495,6 @@ class SQLiteGraphPlugin(GraphPlugin):
             edges=edges,
             metadata={"depth": depth, "center": node_id}
         )
-
-    def execute(
-        self,
-        query: Union[GraphQuery, str],  # Query object or raw query string
-        **kwargs
-    ) -> GraphContext:  # Query results as a subgraph
-        """Execute a generic query against the graph."""
-        sql = query.query if isinstance(query, GraphQuery) else query
-
-        # For raw SQL, we return generic metadata only
-        # TODO: Implement robust raw SQL handling for node/edge queries
-        self.logger.warning("Raw execute() called. Returning generic metadata only.")
-        return GraphContext([], [], metadata={"status": "Raw SQL execution not fully mapped to objects yet."})
 
     # -------------------------------------------------------------------------
     # UPDATE
