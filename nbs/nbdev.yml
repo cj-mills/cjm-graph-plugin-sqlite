@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "cjm-graph-plugin-sqlite"
+  site-url: "https://cj-mills.github.io/cjm-graph-plugin-sqlite"
+  description: "A local, file-backed Context Graph worker for the cjm-plugin-system that implements graph storage, traversal, and querying using SQLite."
+  repo-branch: main
+  repo-url: "https://github.com/cj-mills/cjm-graph-plugin-sqlite"
