@@ -1,0 +1,24 @@
+# Environment for cjm-graph-plugin-sqlite
+# Provides a local, file-backed Context Graph implementation using SQLite
+name: cjm-graph-plugin-sqlite
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    # Core Infrastructure
+    - cjm-plugin-system
+    
+    # Tier 2 Interface
+    - cjm-graph-plugin-system
+    
+    # Utilities
+    - fastcore
+    
+    # Worker dependencies
+    - fastapi
+    - uvicorn
+    - psutil
+    - httpx
