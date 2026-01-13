@@ -55,17 +55,15 @@ from cjm_graph_plugin_sqlite.meta import (
 ``` python
 def get_plugin_metadata() -> Dict[str, Any]:  # Plugin metadata for manifest generation
     """Return metadata required to register this plugin with the PluginManager."""
-    # Calculate default DB path relative to the environment
-    # e.g., /opt/conda/envs/cjm-graph-plugin-sqlite/data/context_graph.db
+    # Fallback base path (current behavior for backward compatibility)
     base_path = os.path.dirname(os.path.dirname(sys.executable))
-    data_dir = os.path.join(base_path, "data")
-    db_path = os.path.join(data_dir, "context_graph.db")
-
-    # Ensure data directory exists
-    os.makedirs(data_dir, exist_ok=True)
-
-    return {
-        "name": "cjm-graph-plugin-sqlite",
+    
+    # Use CJM config if available, else fallback to env-relative paths
+    cjm_data_dir = os.environ.get("CJM_DATA_DIR")
+    
+    # Plugin data directory
+    plugin_name = "cjm-graph-plugin-sqlite"
+    if cjm_data_dir
     "Return metadata required to register this plugin with the PluginManager."
 ```
 
