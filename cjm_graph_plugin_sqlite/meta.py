@@ -9,6 +9,7 @@ __all__ = ['get_plugin_metadata']
 import os
 import sys
 from typing import Any, Dict
+from . import __version__
 
 # %% ../nbs/meta.ipynb 4
 def get_plugin_metadata() -> Dict[str, Any]:  # Plugin metadata for manifest generation
@@ -21,6 +22,7 @@ def get_plugin_metadata() -> Dict[str, Any]:  # Plugin metadata for manifest gen
     
     # Plugin data directory
     plugin_name = "cjm-graph-plugin-sqlite"
+    package_name = plugin_name.replace("-", "_")
     if cjm_data_dir:
         data_dir = os.path.join(cjm_data_dir, plugin_name)
     else:
@@ -33,12 +35,12 @@ def get_plugin_metadata() -> Dict[str, Any]:  # Plugin metadata for manifest gen
 
     return {
         "name": plugin_name,
-        "version": "0.1.0",
+        "version": __version__,
         "type": "graph",
         "category": "knowledge-management",
-        "interface": "cjm_graph_plugin_system.plugin_interface.GraphPlugin",
+        "interface": f"{package_name}.plugin_interface.GraphPlugin",
 
-        "module": "cjm_graph_plugin_sqlite.plugin",
+        "module": f"{package_name}.plugin",
         "class": "SQLiteGraphPlugin",
 
         # Critical: The absolute path to THIS environment's python
