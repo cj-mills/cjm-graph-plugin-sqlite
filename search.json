@@ -1,0 +1,122 @@
+[
+  {
+    "objectID": "meta.html",
+    "href": "meta.html",
+    "title": "Metadata",
+    "section": "",
+    "text": "source",
+    "crumbs": [
+      "Metadata"
+    ]
+  },
+  {
+    "objectID": "meta.html#testing",
+    "href": "meta.html#testing",
+    "title": "Metadata",
+    "section": "Testing",
+    "text": "Testing\n\nimport json\n\nmetadata = get_plugin_metadata()\nprint(json.dumps(metadata, indent=2))\n\n{\n  \"name\": \"cjm-graph-plugin-sqlite\",\n  \"version\": \"0.0.4\",\n  \"type\": \"graph\",\n  \"category\": \"knowledge-management\",\n  \"interface\": \"cjm_graph_plugin_sqlite.plugin_interface.GraphPlugin\",\n  \"module\": \"cjm_graph_plugin_sqlite.plugin\",\n  \"class\": \"SQLiteGraphPlugin\",\n  \"python_path\": \"/opt/hostedtoolcache/Python/3.12.12/x64/bin/python\",\n  \"db_path\": \"/opt/hostedtoolcache/Python/3.12.12/x64/data/context_graph.db\",\n  \"resources\": {\n    \"requires_gpu\": false,\n    \"min_system_ram_mb\": 512\n  },\n  \"env_vars\": {}\n}",
+    "crumbs": [
+      "Metadata"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "cjm-graph-plugin-sqlite",
+    "section": "",
+    "text": "pip install cjm_graph_plugin_sqlite",
+    "crumbs": [
+      "cjm-graph-plugin-sqlite"
+    ]
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "cjm-graph-plugin-sqlite",
+    "section": "",
+    "text": "pip install cjm_graph_plugin_sqlite",
+    "crumbs": [
+      "cjm-graph-plugin-sqlite"
+    ]
+  },
+  {
+    "objectID": "index.html#project-structure",
+    "href": "index.html#project-structure",
+    "title": "cjm-graph-plugin-sqlite",
+    "section": "Project Structure",
+    "text": "Project Structure\nnbs/\n├── meta.ipynb   # Metadata introspection for the SQLite Graph plugin used by cjm-ctl to generate the registration manifest.\n└── plugin.ipynb # Plugin implementation for Context Graph using SQLite\nTotal: 2 notebooks",
+    "crumbs": [
+      "cjm-graph-plugin-sqlite"
+    ]
+  },
+  {
+    "objectID": "index.html#module-dependencies",
+    "href": "index.html#module-dependencies",
+    "title": "cjm-graph-plugin-sqlite",
+    "section": "Module Dependencies",
+    "text": "Module Dependencies\ngraph LR\n    meta[meta&lt;br/&gt;Metadata]\n    plugin[plugin&lt;br/&gt;SQLite Graph Plugin]\n\n    plugin --&gt; meta\n1 cross-module dependencies detected",
+    "crumbs": [
+      "cjm-graph-plugin-sqlite"
+    ]
+  },
+  {
+    "objectID": "index.html#cli-reference",
+    "href": "index.html#cli-reference",
+    "title": "cjm-graph-plugin-sqlite",
+    "section": "CLI Reference",
+    "text": "CLI Reference\nNo CLI commands found in this project.",
+    "crumbs": [
+      "cjm-graph-plugin-sqlite"
+    ]
+  },
+  {
+    "objectID": "index.html#module-overview",
+    "href": "index.html#module-overview",
+    "title": "cjm-graph-plugin-sqlite",
+    "section": "Module Overview",
+    "text": "Module Overview\nDetailed documentation for each module in the project:\n\nMetadata (meta.ipynb)\n\nMetadata introspection for the SQLite Graph plugin used by cjm-ctl to generate the registration manifest.\n\n\nImport\nfrom cjm_graph_plugin_sqlite.meta import (\n    get_plugin_metadata\n)\n\n\nFunctions\ndef get_plugin_metadata() -&gt; Dict[str, Any]:  # Plugin metadata for manifest generation\n    \"\"\"Return metadata required to register this plugin with the PluginManager.\"\"\"\n    # Fallback base path (current behavior for backward compatibility)\n    base_path = os.path.dirname(os.path.dirname(sys.executable))\n    \n    # Use CJM config if available, else fallback to env-relative paths\n    cjm_data_dir = os.environ.get(\"CJM_DATA_DIR\")\n    \n    # Plugin data directory\n    plugin_name = \"cjm-graph-plugin-sqlite\"\n    package_name = plugin_name.replace(\"-\", \"_\")\n    if cjm_data_dir\n    \"Return metadata required to register this plugin with the PluginManager.\"\n\n\n\nSQLite Graph Plugin (plugin.ipynb)\n\nPlugin implementation for Context Graph using SQLite\n\n\nImport\nfrom cjm_graph_plugin_sqlite.plugin import (\n    SQLiteGraphPluginConfig,\n    SQLiteGraphPlugin\n)\n\n\nClasses\n@dataclass\nclass SQLiteGraphPluginConfig:\n    \"Configuration for SQLite Graph Plugin.\"\n    \n    db_path: Optional[str] = field(...)\n    readonly: bool = field(...)\nclass SQLiteGraphPlugin:\n    def __init__(self):\n        self.logger = logging.getLogger(f\"{__name__}.{type(self).__name__}\")\n        self.config: SQLiteGraphPluginConfig = None\n    \"Local, file-backed Context Graph implementation using SQLite.\"\n    \n    def __init__(self):\n            self.logger = logging.getLogger(f\"{__name__}.{type(self).__name__}\")\n            self.config: SQLiteGraphPluginConfig = None\n    \n    def name(self) -&gt; str:  # Plugin name identifier\n            \"\"\"Get the plugin name identifier.\"\"\"\n            return \"sqlite_graph\"\n    \n        @property\n        def version(self) -&gt; str:  # Plugin version string\n        \"Get the plugin name identifier.\"\n    \n    def version(self) -&gt; str:  # Plugin version string\n            \"\"\"Get the plugin version string.\"\"\"\n            return \"0.1.0\"\n    \n        def get_current_config(self) -&gt; Dict[str, Any]:  # Current configuration as dictionary\n        \"Get the plugin version string.\"\n    \n    def get_current_config(self) -&gt; Dict[str, Any]:  # Current configuration as dictionary\n            \"\"\"Return current configuration state.\"\"\"\n            if not self.config\n        \"Return current configuration state.\"\n    \n    def get_config_schema(self) -&gt; Dict[str, Any]:  # JSON Schema for configuration\n            \"\"\"Return JSON Schema for UI generation.\"\"\"\n            return dataclass_to_jsonschema(SQLiteGraphPluginConfig)\n    \n        def initialize(\n            self,\n            config: Optional[Any] = None  # Configuration dataclass, dict, or None\n        ) -&gt; None\n        \"Return JSON Schema for UI generation.\"\n    \n    def initialize(\n            self,\n            config: Optional[Any] = None  # Configuration dataclass, dict, or None\n        ) -&gt; None\n        \"Initialize DB connection and schema.\"\n    \n    def execute(\n            self,\n            action: str = \"get_schema\",  # Action to perform\n            **kwargs\n        ) -&gt; Dict[str, Any]:  # JSON-serializable result\n        \"Dispatch to appropriate method based on action.\"\n    \n    def add_nodes(\n            self,\n            nodes: List[GraphNode]  # Nodes to create\n        ) -&gt; List[str]:  # Created node IDs\n        \"Bulk create nodes.\"\n    \n    def add_edges(\n            self,\n            edges: List[GraphEdge]  # Edges to create\n        ) -&gt; List[str]:  # Created edge IDs\n        \"Bulk create edges.\"\n    \n    def get_node(\n            self,\n            node_id: str  # UUID of node to retrieve\n        ) -&gt; Optional[GraphNode]:  # Node or None if not found\n        \"Get a single node by ID.\"\n    \n    def get_edge(\n            self,\n            edge_id: str  # UUID of edge to retrieve\n        ) -&gt; Optional[GraphEdge]:  # Edge or None if not found\n        \"Get a single edge by ID.\"\n    \n    def find_nodes_by_source(\n            self,\n            source_ref: SourceRef  # External resource reference\n        ) -&gt; List[GraphNode]:  # Nodes attached to this source\n        \"Find all nodes linked to a specific external resource.\"\n    \n    def find_nodes_by_label(\n            self,\n            label: str,  # Node label to search for\n            limit: int = 100  # Max results\n        ) -&gt; List[GraphNode]:  # Matching nodes\n        \"Find nodes by label.\"\n    \n    def get_context(\n            self,\n            node_id: str,  # Starting node UUID\n            depth: int = 1,  # Traversal depth (1 = immediate neighbors)\n            filter_labels: Optional[List[str]] = None  # Only include nodes with these labels\n        ) -&gt; GraphContext:  # Subgraph containing node and its neighborhood\n        \"Get the neighborhood of a specific node.\"\n    \n    def update_node(\n            self,\n            node_id: str,  # UUID of node to update\n            properties: Dict[str, Any]  # Properties to merge/update\n        ) -&gt; bool:  # True if successful\n        \"Partial update of node properties.\"\n    \n    def update_edge(\n            self,\n            edge_id: str,  # UUID of edge to update\n            properties: Dict[str, Any]  # Properties to merge/update\n        ) -&gt; bool:  # True if successful\n        \"Partial update of edge properties.\"\n    \n    def delete_nodes(\n            self,\n            node_ids: List[str],  # UUIDs of nodes to delete\n            cascade: bool = True  # Also delete connected edges\n        ) -&gt; int:  # Number of nodes deleted\n        \"Delete nodes (and optionally connected edges).\"\n    \n    def delete_edges(\n            self,\n            edge_ids: List[str]  # UUIDs of edges to delete\n        ) -&gt; int:  # Number of edges deleted\n        \"Delete edges.\"\n    \n    def get_schema(self) -&gt; Dict[str, Any]:  # Graph schema/ontology\n            \"\"\"Return the current ontology/schema of the graph.\"\"\"\n            schema = {\"node_labels\": [], \"edge_types\": [], \"counts\": {}}\n        \"Return the current ontology/schema of the graph.\"\n    \n    def import_graph(\n            self,\n            graph_data: GraphContext,  # Data to import\n            merge_strategy: str = \"overwrite\"  # \"overwrite\", \"skip\", or \"merge\"\n        ) -&gt; Dict[str, int]:  # Import statistics {nodes_created, edges_created, ...}\n        \"Bulk import a GraphContext (e.g., from backup or another plugin).\"\n    \n    def export_graph(\n            self,\n            filter_query: Optional[GraphQuery] = None  # Optional filter\n        ) -&gt; GraphContext:  # Exported subgraph or full graph\n        \"Export the entire graph or a filtered subset.\"\n    \n    def cleanup(self) -&gt; None\n        \"Clean up resources.\"",
+    "crumbs": [
+      "cjm-graph-plugin-sqlite"
+    ]
+  },
+  {
+    "objectID": "plugin.html",
+    "href": "plugin.html",
+    "title": "SQLite Graph Plugin",
+    "section": "",
+    "text": "source\n\n\n\ndef SQLiteGraphPluginConfig(\n    db_path:Optional=None, readonly:bool=False\n)-&gt;None:\n\nConfiguration for SQLite Graph Plugin.",
+    "crumbs": [
+      "SQLite Graph Plugin"
+    ]
+  },
+  {
+    "objectID": "plugin.html#configuration",
+    "href": "plugin.html#configuration",
+    "title": "SQLite Graph Plugin",
+    "section": "",
+    "text": "source\n\n\n\ndef SQLiteGraphPluginConfig(\n    db_path:Optional=None, readonly:bool=False\n)-&gt;None:\n\nConfiguration for SQLite Graph Plugin.",
+    "crumbs": [
+      "SQLite Graph Plugin"
+    ]
+  },
+  {
+    "objectID": "plugin.html#sqlitegraphplugin",
+    "href": "plugin.html#sqlitegraphplugin",
+    "title": "SQLite Graph Plugin",
+    "section": "SQLiteGraphPlugin",
+    "text": "SQLiteGraphPlugin\nLocal, file-backed Context Graph implementation using SQLite. Stores nodes and edges in relational tables with JSON payloads for properties.\nSchema:\n-- Nodes table\nCREATE TABLE nodes (\n    id TEXT PRIMARY KEY,\n    label TEXT NOT NULL,\n    properties JSON,\n    sources JSON,\n    created_at REAL,\n    updated_at REAL\n);\n\n-- Edges table (with foreign keys for cascade delete)\nCREATE TABLE edges (\n    id TEXT PRIMARY KEY,\n    source_id TEXT NOT NULL,\n    target_id TEXT NOT NULL,\n    relation_type TEXT NOT NULL,\n    properties JSON,\n    created_at REAL,\n    updated_at REAL,\n    FOREIGN KEY(source_id) REFERENCES nodes(id) ON DELETE CASCADE,\n    FOREIGN KEY(target_id) REFERENCES nodes(id) ON DELETE CASCADE\n);\n\nsource\n\nSQLiteGraphPlugin\n\ndef SQLiteGraphPlugin(\n    \n):\n\nLocal, file-backed Context Graph implementation using SQLite.",
+    "crumbs": [
+      "SQLite Graph Plugin"
+    ]
+  },
+  {
+    "objectID": "plugin.html#testing-the-plugin",
+    "href": "plugin.html#testing-the-plugin",
+    "title": "SQLite Graph Plugin",
+    "section": "Testing the Plugin",
+    "text": "Testing the Plugin\n\nimport tempfile\nimport uuid\n\n# Create plugin with temp database\nplugin = SQLiteGraphPlugin()\n\n# Use temp file for testing\ntmp_db = tempfile.NamedTemporaryFile(suffix=\".db\", delete=False)\nplugin.initialize({\"db_path\": tmp_db.name})\n\nprint(f\"Plugin: {plugin.name} v{plugin.version}\")\nprint(f\"Database: {plugin._db_path}\")\n\nPlugin: sqlite_graph v0.1.0\nDatabase: /tmp/tmpvv9156mc.db\n\n\n\n# Test get_config_schema\nschema = plugin.get_config_schema()\nprint(f\"Config schema: {list(schema['properties'].keys())}\")\n\nConfig schema: ['db_path', 'readonly']\n\n\n\n# Create some nodes\nalice_id = str(uuid.uuid4())\nbob_id = str(uuid.uuid4())\nml_id = str(uuid.uuid4())\n\n# Simulate consumed content and compute hash\ntranscript_content = b\"Alice discussed machine learning with Bob in the podcast.\"\ncontent_hash = SourceRef.compute_hash(transcript_content)\n\n# Create SourceRef to link to external data (now requires content_hash)\ntranscript_ref = SourceRef(\n    plugin_name=\"cjm-transcription-plugin-whisper\",\n    table_name=\"transcriptions\",\n    row_id=\"job-abc123\",\n    content_hash=content_hash,\n    segment_slice=\"full_text\"\n)\n\nnodes = [\n    GraphNode(id=alice_id, label=\"Person\", properties={\"name\": \"Alice\", \"role\": \"speaker\"}, sources=[transcript_ref]),\n    GraphNode(id=bob_id, label=\"Person\", properties={\"name\": \"Bob\"}),\n    GraphNode(id=ml_id, label=\"Concept\", properties={\"name\": \"Machine Learning\", \"definition\": \"AI subfield\"})\n]\n\ncreated_ids = plugin.add_nodes(nodes)\nprint(f\"Created {len(created_ids)} nodes\")\n\nCreated 3 nodes\n\n\n\n# Create edges\nedges = [\n    GraphEdge(id=str(uuid.uuid4()), source_id=alice_id, target_id=ml_id, relation_type=\"MENTIONS\", properties={\"confidence\": 0.95}),\n    GraphEdge(id=str(uuid.uuid4()), source_id=bob_id, target_id=ml_id, relation_type=\"MENTIONS\"),\n    GraphEdge(id=str(uuid.uuid4()), source_id=alice_id, target_id=bob_id, relation_type=\"KNOWS\")\n]\n\ncreated_ids = plugin.add_edges(edges)\nprint(f\"Created {len(created_ids)} edges\")\n\nCreated 3 edges\n\n\n\n# Test get_node\nalice = plugin.get_node(alice_id)\nprint(f\"Retrieved: {alice.label} - {alice.properties}\")\nprint(f\"Sources: {[s.to_dict() for s in alice.sources]}\")\n\nRetrieved: Person - {'name': 'Alice', 'role': 'speaker'}\nSources: [{'plugin_name': 'cjm-transcription-plugin-whisper', 'table_name': 'transcriptions', 'row_id': 'job-abc123', 'content_hash': 'sha256:f85b2165bd6e790af2cf6a2223c07f74cbf0f588434395be4607a479c7e592a3', 'segment_slice': 'full_text'}]\n\n\n\n# Test get_context (neighborhood traversal)\ncontext = plugin.get_context(alice_id, depth=1)\nprint(f\"Alice's neighborhood: {len(context.nodes)} nodes, {len(context.edges)} edges\")\nprint(f\"Neighbors: {[n.properties.get('name', n.label) for n in context.nodes]}\")\n\nAlice's neighborhood: 3 nodes, 2 edges\nNeighbors: ['Machine Learning', 'Alice', 'Bob']\n\n\n\n# Test find_nodes_by_source\nfound = plugin.find_nodes_by_source(transcript_ref)\nprint(f\"Nodes linked to transcript job-abc123: {[n.properties.get('name') for n in found]}\")\n\nNodes linked to transcript job-abc123: ['Alice']\n\n\n\n# Test content hash round-trip through SQLite\nalice = plugin.get_node(alice_id)\nloaded_ref = alice.sources[0]\n\n# Hash survived storage\nprint(f\"Stored hash:   {loaded_ref.content_hash[:40]}...\")\nprint(f\"Original hash: {content_hash[:40]}...\")\nassert loaded_ref.content_hash == content_hash\n\n# verify() works after round-trip\nassert loaded_ref.verify(transcript_content), \"verify() should return True for original content\"\nassert not loaded_ref.verify(b\"tampered\"), \"verify() should return False for tampered content\"\nprint(\"Content hash round-trip: PASSED\")\n\nStored hash:   sha256:f85b2165bd6e790af2cf6a2223c07f74c...\nOriginal hash: sha256:f85b2165bd6e790af2cf6a2223c07f74c...\nContent hash round-trip: PASSED\n\n\n\n# Test find_nodes_by_label\npeople = plugin.find_nodes_by_label(\"Person\")\nprint(f\"People: {[p.properties['name'] for p in people]}\")\n\nPeople: ['Alice', 'Bob']\n\n\n\n# Test get_schema\nschema = plugin.get_schema()\nprint(f\"Schema: {schema}\")\n\nSchema: {'node_labels': ['Concept', 'Person'], 'edge_types': ['KNOWS', 'MENTIONS'], 'counts': {'Concept': 1, 'Person': 2}}\n\n\n\n# Test update_node\nplugin.update_node(alice_id, {\"role\": \"host\", \"verified\": True})\nalice = plugin.get_node(alice_id)\nprint(f\"Updated Alice: {alice.properties}\")\n\nUpdated Alice: {'name': 'Alice', 'role': 'host', 'verified': True}\n\n\n\n# Test export/import\nexported = plugin.export_graph()\nprint(f\"Exported: {len(exported.nodes)} nodes, {len(exported.edges)} edges\")\n\n# Test FileBackedDTO (zero-copy transfer)\ntemp_path = exported.to_temp_file()\nprint(f\"Saved to temp file: {temp_path}\")\n\n# Load into new plugin\nnew_plugin = SQLiteGraphPlugin()\ntmp_db2 = tempfile.NamedTemporaryFile(suffix=\".db\", delete=False)\nnew_plugin.initialize({\"db_path\": tmp_db2.name})\n\n# Load from file and import\nloaded = GraphContext.from_file(temp_path)\nstats = new_plugin.import_graph(loaded)\nprint(f\"Import stats: {stats}\")\n\nimport os\nos.unlink(temp_path)\n\nExported: 0 nodes, 0 edges\nSaved to temp file: /tmp/tmpbxv13p6k.json\nImport stats: {'nodes_created': 0, 'edges_created': 0}\n\n\n\n# Test delete with cascade\ndeleted = plugin.delete_nodes([alice_id], cascade=True)\nprint(f\"Deleted {deleted} node(s)\")\nprint(f\"Remaining schema: {plugin.get_schema()}\")\n\nDeleted 1 node(s)\nRemaining schema: {'node_labels': ['Concept', 'Person'], 'edge_types': ['MENTIONS'], 'counts': {'Concept': 1, 'Person': 1}}\n\n\n\n# Cleanup\nplugin.cleanup()\nnew_plugin.cleanup()\n\n# Remove temp files\nos.unlink(tmp_db.name)\nos.unlink(tmp_db2.name)\n\nprint(\"Cleanup complete\")\n\nCleanup complete",
+    "crumbs": [
+      "SQLite Graph Plugin"
+    ]
+  }
+]
