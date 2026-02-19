@@ -132,26 +132,29 @@ class SQLiteGraphPlugin(GraphPlugin):
 
     def _row_to_node(
         self,
-        row: Tuple  # DB row: (id, label, properties_json, sources_json)
+        row: Tuple  # DB row: (id, label, properties_json, sources_json, created_at, updated_at)
     ) -> GraphNode:  # Reconstructed GraphNode
         """Convert DB row to GraphNode DTO."""
         props = json.loads(row[2]) if row[2] else {}
         sources_raw = json.loads(row[3]) if row[3] else []
         sources = [SourceRef(**s) for s in sources_raw]
-        return GraphNode(id=row[0], label=row[1], properties=props, sources=sources)
+        return GraphNode(
+            id=row[0], label=row[1], properties=props, sources=sources,
+            created_at=row[4] if len(row) > 4 else None,
+            updated_at=row[5] if len(row) > 5 else None,
+        )
 
     def _row_to_edge(
         self,
-        row: Tuple  # DB row: (id, source_id, target_id, relation_type, properties_json)
+        row: Tuple  # DB row: (id, source_id, target_id, relation_type, properties_json, created_at, updated_at)
     ) -> GraphEdge:  # Reconstructed GraphEdge
         """Convert DB row to GraphEdge DTO."""
         props = json.loads(row[4]) if row[4] else {}
         return GraphEdge(
-            id=row[0],
-            source_id=row[1],
-            target_id=row[2],
-            relation_type=row[3],
-            properties=props
+            id=row[0], source_id=row[1], target_id=row[2],
+            relation_type=row[3], properties=props,
+            created_at=row[5] if len(row) > 5 else None,
+            updated_at=row[6] if len(row) > 6 else None,
         )
 
     def _dict_to_node(
@@ -169,7 +172,9 @@ class SQLiteGraphPlugin(GraphPlugin):
             id=data["id"],
             label=data["label"],
             properties=data.get("properties", {}),
-            sources=sources
+            sources=sources,
+            created_at=data.get("created_at"),
+            updated_at=data.get("updated_at"),
         )
 
     def _dict_to_edge(
@@ -182,7 +187,9 @@ class SQLiteGraphPlugin(GraphPlugin):
             source_id=data["source_id"],
             target_id=data["target_id"],
             relation_type=data["relation_type"],
-            properties=data.get("properties", {})
+            properties=data.get("properties", {}),
+            created_at=data.get("created_at"),
+            updated_at=data.get("updated_at"),
         )
 
     # -------------------------------------------------------------------------
@@ -353,7 +360,7 @@ class SQLiteGraphPlugin(GraphPlugin):
         """Get a single node by ID."""
         with sqlite3.connect(self._db_path) as con:
             cur = con.execute(
-                "SELECT id, label, properties, sources FROM nodes WHERE id = ?",
+                "SELECT id, label, properties, sources, created_at, updated_at FROM nodes WHERE id = ?",
                 (node_id,)
             )
             row = cur.fetchone()
@@ -366,7 +373,7 @@ class SQLiteGraphPlugin(GraphPlugin):
         """Get a single edge by ID."""
         with sqlite3.connect(self._db_path) as con:
             cur = con.execute(
-                "SELECT id, source_id, target_id, relation_type, properties FROM edges WHERE id = ?",
+                "SELECT id, source_id, target_id, relation_type, properties, created_at, updated_at FROM edges WHERE id = ?",
                 (edge_id,)
             )
             row = cur.fetchone()
@@ -379,7 +386,7 @@ class SQLiteGraphPlugin(GraphPlugin):
         """Find all nodes linked to a specific external resource."""
         # Use SQLite's json_each() to search within the sources JSON array
         query = """
-            SELECT DISTINCT n.id, n.label, n.properties, n.sources
+            SELECT DISTINCT n.id, n.label, n.properties, n.sources, n.created_at, n.updated_at
             FROM nodes n, json_each(n.sources) as src
             WHERE json_extract(src.value, '$.plugin_name') = ?
               AND json_extract(src.value, '$.row_id') = ?
@@ -407,7 +414,7 @@ class SQLiteGraphPlugin(GraphPlugin):
         results = []
         with sqlite3.connect(self._db_path) as con:
             cur = con.execute(
-                "SELECT id, label, properties, sources FROM nodes WHERE label = ? LIMIT ?",
+                "SELECT id, label, properties, sources, created_at, updated_at FROM nodes WHERE label = ? LIMIT ?",
                 (label, limit)
             )
             for row in cur:
@@ -464,7 +471,7 @@ class SQLiteGraphPlugin(GraphPlugin):
             placeholders = ','.join('?' for _ in edge_ids)
             with sqlite3.connect(self._db_path) as con:
                 cur = con.execute(
-                    f"SELECT id, source_id, target_id, relation_type, properties FROM edges WHERE id IN ({placeholders})",
+                    f"SELECT id, source_id, target_id, relation_type, properties, created_at, updated_at FROM edges WHERE id IN ({placeholders})",
                     tuple(edge_ids)
                 )
                 for row in cur:
@@ -478,7 +485,7 @@ class SQLiteGraphPlugin(GraphPlugin):
         if node_ids_in_context:
             placeholders = ','.join('?' for _ in node_ids_in_context)
             with sqlite3.connect(self._db_path) as con:
-                sql = f"SELECT id, label, properties, sources FROM nodes WHERE id IN ({placeholders})"
+                sql = f"SELECT id, label, properties, sources, created_at, updated_at FROM nodes WHERE id IN ({placeholders})"
 
                 # Apply optional label filtering
                 params = list(node_ids_in_context)
@@ -623,11 +630,11 @@ class SQLiteGraphPlugin(GraphPlugin):
         all_edges = []
 
         with sqlite3.connect(self._db_path) as con:
-            cur = con.execute("SELECT id, label, properties, sources FROM nodes")
+            cur = con.execute("SELECT id, label, properties, sources, created_at, updated_at FROM nodes")
             for row in cur:
                 all_nodes.append(self._row_to_node(row))
 
-            cur = con.execute("SELECT id, source_id, target_id, relation_type, properties FROM edges")
+            cur = con.execute("SELECT id, source_id, target_id, relation_type, properties, created_at, updated_at FROM edges")
             for row in cur:
                 all_edges.append(self._row_to_edge(row))
 

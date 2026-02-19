@@ -63,6 +63,7 @@ def get_plugin_metadata() -> Dict[str, Any]:  # Plugin metadata for manifest gen
     
     # Plugin data directory
     plugin_name = "cjm-graph-plugin-sqlite"
+    package_name = plugin_name.replace("-", "_")
     if cjm_data_dir
     "Return metadata required to register this plugin with the PluginManager."
 ```
