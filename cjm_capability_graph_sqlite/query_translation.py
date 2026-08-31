@@ -22,9 +22,10 @@ Translation rules:
   does Python-side locator equality; a recurring need here is promotion
   evidence).
 - **Modes**: `count` > `project` > full (mirrors the result DTO contract).
-  Projected node rows always carry `id` (+ `label` projectable structurally;
-  `sources` projectable as parsed ref dicts); edge rows always carry
-  `id`/`source_id`/`target_id` (+ `relation_type` projectable)."""
+  Projected node rows always carry `id` (+ `label`/`created_at`/`updated_at`
+  projectable structurally — the storage stamps, never shadowed by a
+  same-named property; `sources` projectable as parsed ref dicts); edge rows
+  always carry `id`/`source_id`/`target_id` (+ `relation_type` projectable)."""
 
 import json
 import re
@@ -230,6 +231,9 @@ def translate_node_query(
             if name == "label":
                 select_parts.append("n.label")
                 keys.append("label")
+            elif name in ("created_at", "updated_at"):
+                select_parts.append("n." + name)   # storage stamp, not a property
+                keys.append(name)
             elif name == "sources":
                 select_parts.append("n.sources")
                 keys.append("sources")

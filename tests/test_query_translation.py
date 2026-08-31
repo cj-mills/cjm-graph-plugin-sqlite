@@ -85,6 +85,18 @@ def test_spine_read_ordered_projection(con):
     assert json.loads(rows[1]["sources"])[0]["content_hash"] == "sha256:ab"
 
 
+def test_structural_timestamp_projection(con):
+    # created_at/updated_at project from the storage COLUMNS (the stamps),
+    # not json_extract over properties — no Segment carries them as props.
+    rows = run(con, NodeQuery(label="Segment",
+                              related=RelationPredicate("PART_OF", node_id="doc-1"),
+                              order_by=OrderBy(prop="index"),
+                              project=["index", "created_at", "updated_at"]))
+    assert [r["created_at"] for r in rows] == [1.0, 1.0, 1.0, 1.0]
+    assert rows[0]["updated_at"] == 1.0
+    assert rows[0]["id"] == "s0"
+
+
 def test_empty_filter_or_case_two_counts(con):
     empty_eq = run(con, NodeQuery(label="Segment", where=[PropertyPredicate("text", "eq", "")],
                                   related=RelationPredicate("PART_OF", node_id="doc-1"), count=True))
