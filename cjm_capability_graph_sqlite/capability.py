@@ -82,6 +82,12 @@ class SQLiteGraphCapability(ToolCapability):
 
     config_class = SQLiteGraphCapabilityConfig
 
+    # Substrate observability class (DEC 8bf656c0 as manifest DATA, finding 0d886ffe B):
+    # graph-storage ops are compute-light, re-derivable work — routine per-op journal
+    # rows and worker-lifecycle rows are noise (they filled 97% of journal.db); failures
+    # still journal. `cjm-ctl regenerate-manifest` records this on the manifest.
+    observability_class = "ambient"
+
     def __init__(self):
         self.logger = logging.getLogger(f"{__name__}.{type(self).__name__}")
         self.config: SQLiteGraphCapabilityConfig = None
