@@ -201,3 +201,23 @@ def test_update_node_reserved_updated_at_sets_column(cap):
     row2 = con.execute("SELECT updated_at FROM nodes WHERE id = ?", (nid,)).fetchone()
     con.close()
     assert row2[0] > 1234.5
+
+
+def test_add_edges_aggregates_missing_endpoint_warnings(cap, caplog):
+    """Finding 0d886ffe: FK-skipped edges log ONE warning per call (count + sample),
+    never one line per edge — per-edge logging flooded diagnostics.db during rebuilds."""
+    import logging
+    from cjm_context_graph_primitives.graph import GraphEdge, GraphNode
+    cap.add_nodes([GraphNode(id="n-live", label="T", properties={}, sources=[])])
+    edges = [GraphEdge(id=f"e{i}", source_id="n-live", target_id=f"n-missing-{i}",
+                       relation_type="REL", properties={}) for i in range(25)]
+    edges.append(GraphEdge(id="e-ok", source_id="n-live", target_id="n-live",
+                           relation_type="SELF", properties={}))
+    with caplog.at_level(logging.WARNING):
+        ids = cap.add_edges(edges)
+    assert ids == ["e-ok"]  # skipped count recoverable as len(edges) - len(ids)
+    fk_lines = [r for r in caplog.records if "endpoint node missing" in r.getMessage()]
+    assert len(fk_lines) == 1
+    msg = fk_lines[0].getMessage()
+    assert "25 of 26" in msg and "sample:" in msg
+    assert not any("Edge creation error (likely missing node)" in r.getMessage() for r in caplog.records)

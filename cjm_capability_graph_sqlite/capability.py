@@ -320,9 +320,16 @@ class SQLiteGraphCapability(ToolCapability):
     ) -> List[str]:  # Created edge IDs
         """Bulk create edges.
 
-        Carried created_at/updated_at are honored like add_nodes (0d50b921)."""
+        Carried created_at/updated_at are honored like add_nodes (0d50b921).
+
+        Missing-endpoint edges (FOREIGN KEY failures) are AGGREGATED into one warning
+        per call — count + a bounded sample — never one line per edge: a rebuild replays
+        every journaled edge whose endpoint is absent, and per-edge logging flooded
+        diagnostics.db to 1.5M rows / 633 MB (finding 0d886ffe). The skipped count is
+        recoverable by the caller as `len(edges) - len(ids)`."""
         ids = []
         now = time.time()
+        missing: List[Tuple[str, str, str]] = []  # (source_id, target_id, relation_type) of FK-skipped edges
         with self._connect() as con:
             con.execute("PRAGMA foreign_keys = ON;")
             for e in edges:
@@ -336,7 +343,15 @@ class SQLiteGraphCapability(ToolCapability):
                     )
                     ids.append(e.id)
                 except sqlite3.IntegrityError as err:
-                    self.logger.warning(f"Edge creation error (likely missing node): {err}")
+                    if "FOREIGN KEY" in str(err):
+                        missing.append((e.source_id, e.target_id, e.relation_type))
+                    else:
+                        self.logger.warning(f"Edge creation error ({e.id}): {err}")
+        if missing:
+            sample = "; ".join(f"{s[:8]}->{t[:8]} {r}" for s, t, r in missing[:3])
+            self.logger.warning(
+                f"add_edges: {len(missing)} of {len(edges)} edge(s) skipped — endpoint node missing "
+                f"(FOREIGN KEY); sample: {sample}")
         return ids
 
     # -------------------------------------------------------------------------
